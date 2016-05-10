@@ -15,11 +15,14 @@ class GetSongsByYear(luigi.Task):
         soup = bs4.BeautifulSoup(html)
         songInfos = soup.find_all('ol')
         songInfos = songInfos[0].find_all("li")
-        allSongs = {"artist": [], "title": []}
+        allSongs = {"position": [], "artist": [], "title": []}
+        count = 1
         for song in songInfos:
             songTxt = song.getText()
             songTxt = songTxt.encode("ascii","ignore")
             songTxt = songTxt.split(" - ")
             allSongs["artist"].append(songTxt[0])
             allSongs["title"].append(songTxt[1])
+            allSongs["position"].append(count)
+            count += 1
         pandas.DataFrame(allSongs).to_csv(self.output().path, index=False)
