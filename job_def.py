@@ -10,7 +10,7 @@ if __name__ == "__main__":
     import sys
     from datetime import date, datetime, timedelta
     from task_utils import createOutputDirectoryFromFilename
-    from task_def import GetSongsByYear
+    from task_def import GetSongsByYear, GetTrackUrlsByYear
 
     if len(sys.argv) < 2:
         raise Exception("No config path file, exiting")
@@ -39,6 +39,7 @@ if __name__ == "__main__":
 
     for yr in yrRange:
         tasks.append(GetSongsByYear(config, yr))
+        tasks.append(GetTrackUrlsByYear(config, yr, ))
 
     luigi.build(tasks, local_scheduler=True, workers=1)
 
