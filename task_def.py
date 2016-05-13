@@ -43,6 +43,8 @@ class GetTrackUrlsByYear(luigi.Task):
         songlist = pandas.read_csv(self.input().path)
         qryBase = self.config["spotify_search_url"]
         trackUris = []
+        artistMatch = []
+        titleMatch = []
         # Loop over songs
         for ix, track in songlist.iterrows():
             complete = False
@@ -62,12 +64,16 @@ class GetTrackUrlsByYear(luigi.Task):
             # Only check first element for now
             if len(data["tracks"]["items"]) == 0:
                 trackUris.append("not_found")
+                artistMatch.append("not found")
+                titleMatch.append("not found")
             else:
                 first = data["tracks"]["items"][0]
                 artistCheck = track["artist"] in [x["name"] for x in first["artists"]]
                 nameCheck = first["name"] == track["title"]
                 if artistCheck or nameCheck:
                     trackUris.append(first["uri"])
+                    artistMatch.append(",".join([x["name"] for x in first["artists"]]))
+                    titleMatch.append(first["name"])
                 else:
                     trackUris.append("not_found_first")
 
