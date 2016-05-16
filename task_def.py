@@ -48,7 +48,6 @@ class GetTrackUrlsByYear(luigi.Task):
         # Loop over songs
         for ix, track in songlist.iterrows():
             complete = False
-            #TODO: Remove punctuation and other bad chars
             qry = qryBase.replace("[query]", urllib2.quote(track["artist"] + " " + track["title"]))
             # use search method to return result
             while not complete:
@@ -61,26 +60,35 @@ class GetTrackUrlsByYear(luigi.Task):
                     time.sleep(timeTillRetry + 5)
                 else:
                     print "error: " + str(r.status_code)
-            # Only check first element for now
+            # Check for first element available in this region
             if len(data["tracks"]["items"]) == 0:
                 trackUris.append("not_found")
                 artistMatch.append("not found")
                 titleMatch.append("not found")
             else:
-                first = data["tracks"]["items"][0]
-                artistCheck = track["artist"] in [x["name"] for x in first["artists"]]
-                nameCheck = first["name"] == track["title"]
-                if artistCheck or nameCheck:
-                    trackUris.append(first["uri"])
-                    artistMatch.append(",".join([x["name"] for x in first["artists"]]))
-                    titleMatch.append(first["name"])
-                else:
-                    trackUris.append("not_found_first")
+                for i in data["tracks"]["items"]:
+                    if self.config["region"] in i["available_markets"]:
+                        first = i
+                    else:
+                        first = []
+                if first != []:
+                    artistCheck = track["artist"] in [x["name"] for x in first["artists"]]
+                    nameCheck = first["name"] == track["title"]
+                    if artistCheck or nameCheck:
+                        trackUris.append(first["uri"])
+                        artistMatch.append(",".join([x["name"] for x in first["artists"]]).encode('utf-8').strip())
+                        titleMatch.append(first["name"].encode('utf-8').strip())
+                    else:
+                        trackUris.append("not_found_first")
+                        artistMatch.append("not_found_first")
+                        titleMatch.append("not_found_first")
 
 
             # add result to data frame
             print track
         songlist["URI"] = trackUris
-        open(self.output().path, 'w').close()
+        songlist["matched_artist"] = artistMatch
+        songlist["matched_title"] = titleMatch
         songlist.to_csv(self.input().path, index=False)
+        open(self.output().path, 'w').close()
 

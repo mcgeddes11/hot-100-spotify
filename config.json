@@ -3,6 +3,7 @@
 	"jjj_url": "http://www.abc.net.au/triplej/hottest100/archive/archive.htm?year=[year]&alltime=0",
 	"spotify_search_url": "https://api.spotify.com/v1/search?q=[query]&type=track",
 	"num_workers": 1,
+	"region": "CA",
 	"year_range": [1993,2015],
 	"replace_playlists": false,
 	"replace_songs": false
